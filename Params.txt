@@ -1,0 +1,12 @@
+Normalize:False
+Days:20
+AccBoundv1:5e-02
+AccBoundv2:5e-03
+AccBoundv3:5e-04
+AccBoundv4:5e-05
+trainPercent:0.9
+batchSize:32
+labels:4
+modelDir:.//Checkpoints
+logDir:.//Logs
+dataDir:.//FXTrade//FXTrainData
