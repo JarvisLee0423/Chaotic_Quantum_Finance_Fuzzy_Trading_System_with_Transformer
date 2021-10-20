@@ -1,7 +1,7 @@
 '''
     Copyright:      JarvisLee
     Date:           10/21/2021
-    Filename:       InfoLogger.py
+    File Name:      InfoLogger.py
     Description:    This file is used to log the information when training the model.
 '''
 
