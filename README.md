@@ -1,0 +1,2 @@
+# Chaotic_Quantum_Finance_Fuzzy_Trading_System_with_Transformer
+ Chaotic Transformer Based Quantum Finance Trading System
