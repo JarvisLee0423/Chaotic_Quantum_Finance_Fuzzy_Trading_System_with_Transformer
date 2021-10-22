@@ -168,7 +168,7 @@ class Trainer():
             data = Variable(data).to(device)
             label = Variable(label).to(device)
             # Evaluate the model.
-            prediction = model(data)
+            prediction, _ = model(data)
             # Compute the loss.
             cost = loss(prediction, label)
             # Store the loss.
@@ -211,7 +211,7 @@ if __name__ == "__main__":
     #optimizer = optim.RMSprop(model.parameters(), lr = Cfg.learningRate, weight_decay = Cfg.weightDecay, momentum = Cfg.momentum)
     #optimizer = optim.SGD(model.parameters(), lr = Cfg.learningRate, momentum = Cfg.momentum, weight_decay = Cfg.weightDecay)
     # Create the learning rate decay.
-    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max = 100, eta_min = 1e-10)
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max = 10, eta_min = 1e-10)
     # Train the model.
     for epoch in range(Cfg.epoches):
         # Train the model.
