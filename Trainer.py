@@ -10,6 +10,7 @@ import os
 import time
 import pynvml
 import numpy as np
+import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -33,7 +34,10 @@ if not os.path.exists(Cfg.logDir):
 if not os.path.exists(f'{Cfg.logDir}//ChaoticExtractor//{currentTime}'):
     if not os.path.exists(f'{Cfg.logDir}//ChaoticExtractor'):
         os.mkdir(f'{Cfg.logDir}//ChaoticExtractor')
+    if not os.path.exists(f'{Cfg.logDir}//OutputQuery'):
+        os.mkdir(f'{Cfg.logDir}//OutputQuery')
     os.mkdir(f'{Cfg.logDir}//ChaoticExtractor//{currentTime}')
+    os.mkdir(f'{Cfg.logDir}//OutputQuery//{currentTime}')
 if not os.path.exists(Cfg.dataDir):
     os.mkdir(Cfg.dataDir)
 
@@ -89,7 +93,17 @@ class Trainer():
                 data = Variable(data).to(device)
                 label = Variable(label).to(device)
                 # Compute the prediction.
-                prediction = model(data, plot = Cfg.plot, filename = f'{Cfg.logDir}//ChaoticExtractor//{currentTime}//{epoch}_{epoches}')
+                prediction, mask = model(data, plot = Cfg.plot, filename = f'{Cfg.logDir}//ChaoticExtractor//{currentTime}//{epoch}_{epoches}')
+                # Draw the query out.
+                if mask is not None and epoch == 0 and i == 0:
+                    #print(f'The mask (shape: {mask.shape}):\n {mask}')
+                    plt.matshow(mask)
+                    plt.title('Attention Mask', pad = 20)
+                    plt.xlabel('Sequence Length')
+                    plt.ylabel('Sequence Length')
+                    plt.savefig("./AttentionMask.jpg")
+                    plt.close()
+                    #plt.show()
                 # Compute the loss.
                 cost = loss(prediction, label)
                 # Store the cost.
