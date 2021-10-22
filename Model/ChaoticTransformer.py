@@ -8,6 +8,7 @@
 # Import the necessary library.
 import torch
 import torch.nn as nn
+import matplotlib.pyplot as plt
 from Model.LeeOscillator import Mish, LeeTanh, LeeMish, LeeReLu
 from Model.Modules import Mask, PositionalEmbedding, ChaoticEmbedding
 from Model.ChaoticEncoder import ChaoticEncoder
@@ -282,7 +283,8 @@ class ChaoticTransformer(nn.Module):
             # Print the hint.
             print(f'Apply the decoder.')
             # Create the output query.
-            self.query = nn.Embedding(seqLen, dModel)
+            self.query = torch.empty((seqLen, dModel))
+            self.query = nn.Parameter(nn.init.xavier_normal_(self.query))
             self.decoder = ChaoticDecoder(blocks, head, dModel, dim, hidden, dropout, Lee, MishFunc)
         else:
             # Print the hint.
@@ -323,15 +325,28 @@ class ChaoticTransformer(nn.Module):
         x = x + PE
         # Compute the encoder.
         encoding = self.encoder(x, mask)
+        # Draw the query out.
+        if self.query is not None and filename != 'Sample':
+            #print(f'The query (shape: {query.shape}):\n {query}')
+            plt.matshow(self.query.cpu().detach().numpy())
+            plt.colorbar()
+            plt.title('Output Query', pad = 20)
+            plt.xlabel('Features Dimension')
+            plt.ylabel('Sequence Length')
+            filenameList = filename.split('//')
+            filenameList[2] = "OutputQuery"
+            plt.savefig(f"{'//'.join(filenameList)}.jpg")
+            plt.close()
+            #plt.show()
         # Compute the result.
         if self.decoder is not None:
             # Compute the decoder.
-            output = self.decoder(self.query.weight.unsqueeze(0).repeat(bs, 1, 1), encoding, encoding, PE, CE)
+            output = self.decoder(self.query.unsqueeze(0).repeat(bs, 1, 1), encoding, encoding, PE, CE)
             # Compute the output.
-            return self.predictor(output.reshape(bs, -1))
+            return self.predictor(output.reshape(bs, -1)), mask.squeeze().cpu().detach().numpy()
         else:
             # Compute the output.
-            return self.predictor(encoding.reshape(bs, -1))
+            return self.predictor(encoding.reshape(bs, -1)), mask.squeeze().cpu().detach().numpy()
 
 # Test the code.
 if __name__ == "__main__":
