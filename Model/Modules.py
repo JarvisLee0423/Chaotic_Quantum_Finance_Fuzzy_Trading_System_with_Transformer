@@ -179,7 +179,7 @@ class PositionalEmbedding(nn.Module):
         if plot:
             # Print the positional embedding.
             #print(f'The positional embedding (shape: {PE.shape}):\n {PE}')
-            plt.matshow(PE.numpy())
+            plt.matshow(PE.cpu().numpy())
             plt.colorbar()
             plt.title('Positional Embedding Sample', pad = 20)
             plt.xlabel('Dimension of the input data')
@@ -187,7 +187,7 @@ class PositionalEmbedding(nn.Module):
             plt.savefig("./PositionalEmbeddingSample.jpg")
             plt.show()
         # Return the positional embedding. (PE.shape = [1, seqLen, dim])
-        return PE.unsqueeze(0).detach()
+        return PE.unsqueeze(0).to(x.device).detach()
 
 # Create the class for the chaotic embedding module.
 class ChaoticEmbedding(nn.Module):
@@ -212,17 +212,18 @@ class ChaoticEmbedding(nn.Module):
         # Plot the chaotic extractor.
         if plot and filename is not None:
             #print(f'The chaotic features extractor (shape: {extractor.shape}):\n {extractor}')
-            plt.matshow(extractor.detach().numpy())
+            plt.matshow(extractor.cpu().detach().numpy())
             plt.colorbar()
             plt.title('Chaotic Features Extractor', pad = 20)
             plt.xlabel('Y Dimension of the extractor')
             plt.ylabel('X Dimension of the extractor')
             plt.savefig(f"./{filename}.jpg")
+            plt.close()
             #plt.show()
         # Get the chaotic embedding.
         CE = torch.matmul(extractor, x)
         # Return the chaotic embedding. (CE.shape = [1, seqLen, dim])
-        return CE.detach()
+        return CE.to(x.device).detach()
 
 # Test the codes.
 if __name__ == "__main__":
