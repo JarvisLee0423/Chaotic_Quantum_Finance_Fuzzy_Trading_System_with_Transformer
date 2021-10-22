@@ -1,10 +1,11 @@
+plot:True
 decoder:True
 mish:True
 chaotic:False
 leeTanh:True
 leeReLu:False
 leeMish:False
-chaosExtractor:all
+chaosExtractor:'all'
 Normalize:False
 blocks:6
 head:8
@@ -14,6 +15,12 @@ dModel:100
 dim:300
 hidden:300
 Days:20
+learningRate:0.0005
+momentum:0.9
+beta1:0.9
+beta2:0.98
+epsilon:1e-09
+weightDecay:5e-5
 AccBoundv1:5e-02
 AccBoundv2:5e-03
 AccBoundv3:5e-04
@@ -21,6 +28,9 @@ AccBoundv4:5e-05
 trainPercent:0.9
 dropout:0.1
 batchSize:32
+epoches:100
+seed:1
+GPUID:0
 modelDir:.//Checkpoints
 logDir:.//Logs
 dataDir:.//FXTrade//FXTrainData
