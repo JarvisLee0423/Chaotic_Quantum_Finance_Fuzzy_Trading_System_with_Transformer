@@ -1,6 +1,6 @@
 plot:True
 decoder:True
-mish:True
+mish:False
 chaotic:False
 leeTanh:True
 leeReLu:False
