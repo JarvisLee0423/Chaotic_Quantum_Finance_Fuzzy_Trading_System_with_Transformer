@@ -232,8 +232,6 @@ if __name__ == "__main__":
         model, lrList, trainLoss, trainAcc, evalLoss, evalAcc = Trainer.Trainer(model = model, loss = loss, optim = optimizer, trainSet = trainSet, devSet = devSet, epoch = epoch, epoches = Cfg.epoches, device = device, scheduler = scheduler, eval = True)
         # Get the current learning rates.
         lrs.extend(lrList)
-        print(len(lrs))
-        input("PAUSE")
         # Store the learning rates.
         with open(f'{Cfg.logDir}//NoamScheduler//{currentTime}//learningRates.txt', 'w') as file:
             file.write(str(lrs))
