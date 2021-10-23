@@ -17,6 +17,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 from tqdm import tqdm
 from Model.ChaoticTransformer import ChaoticTransformer
+from Model.NoamScheduler import NoamScheduler
 from Utils.DataPreprocessor import Preprocessor
 from Utils.InfoLogger import Logger
 from Utils.ParamsHandler import Handler
@@ -36,8 +37,11 @@ if not os.path.exists(f'{Cfg.logDir}//ChaoticExtractor//{currentTime}'):
         os.mkdir(f'{Cfg.logDir}//ChaoticExtractor')
     if not os.path.exists(f'{Cfg.logDir}//OutputQuery'):
         os.mkdir(f'{Cfg.logDir}//OutputQuery')
+    if not os.path.exists(f'{Cfg.logDir}//NoamScheduler'):
+        os.mkdir(f'{Cfg.logDir}//NoamScheduler')
     os.mkdir(f'{Cfg.logDir}//ChaoticExtractor//{currentTime}')
     os.mkdir(f'{Cfg.logDir}//OutputQuery//{currentTime}')
+    os.mkdir(f'{Cfg.logDir}//NoamScheduler//{currentTime}')
 if not os.path.exists(Cfg.dataDir):
     os.mkdir(Cfg.dataDir)
 
@@ -65,7 +69,7 @@ class Trainer():
             - 'Evaluator' is used to do the evaluating.
     '''
     # Set the function to train the model.
-    def Trainer(model, loss, optim, trainSet, devSet, epoch, epoches, device, eval = True):
+    def Trainer(model, loss, optim, trainSet, devSet, epoch, epoches, device, scheduler = None, eval = True):
         '''
             This function is used to train the model.\n
             Params:\n
@@ -77,6 +81,7 @@ class Trainer():
                 - epoch: The current training epoch.
                 - epoches: The total training epoches.
                 - device: The device setting.
+                - scheduler: The learning rate scheduler.
                 - eval: The boolean value to indicate whether doing the test during the training.
         '''
         # Initialize the training loss and accuracy.
@@ -85,6 +90,8 @@ class Trainer():
         trainAccv2 = []
         trainAccv3 = []
         trainAccv4 = []
+        # Initialize the learning rate list.
+        lrList = []
         # Set the training loading bar.
         with tqdm(total = len(trainSet), desc = f'Epoch {epoch + 1}/{epoches}', unit = 'batch', dynamic_ncols = True) as pbars:
             # Get the training data.
@@ -93,7 +100,7 @@ class Trainer():
                 data = Variable(data).to(device)
                 label = Variable(label).to(device)
                 # Compute the prediction.
-                prediction, mask = model(data, plot = Cfg.plot, filename = f'{Cfg.logDir}//ChaoticExtractor//{currentTime}//{epoch}_{epoches}')
+                prediction, mask = model(data, plot = Cfg.plot, filename = f'{Cfg.logDir}//ChaoticExtractor//{currentTime}//{epoch + 1}_{epoches}')
                 # Draw the query out.
                 if mask is not None and epoch == 0 and i == 0:
                     #print(f'The mask (shape: {mask.shape}):\n {mask}')
@@ -108,6 +115,11 @@ class Trainer():
                 cost = loss(prediction, label)
                 # Store the cost.
                 trainLoss.append(cost.item())
+                # Check whether apply the inner learning rate scheduler.
+                if scheduler is not None:
+                    scheduler.step()
+                # Store the learning rate.
+                lrList.append(optim.state_dict()['param_groups'][0]['lr'])
                 # Clear the previous gradient.
                 optim.zero_grad()
                 # Compute the backward.
@@ -143,9 +155,9 @@ class Trainer():
             # Print the evaluating result.
             print('- Eval Loss %.4f - Eval Acc [%.4f, %.4f, %.4f, %.4f]' % (evalLoss, evalAccv1, evalAccv2, evalAccv3, evalAccv4), end = ' ')
             # Return the training result.
-            return model.train(), np.mean(trainLoss), [np.mean(trainAccv1), np.mean(trainAccv2), np.mean(trainAccv3), np.mean(trainAccv4)], evalLoss, [evalAccv1, evalAccv2, evalAccv3, evalAccv4]
+            return model.train(), lrList, np.mean(trainLoss), [np.mean(trainAccv1), np.mean(trainAccv2), np.mean(trainAccv3), np.mean(trainAccv4)], evalLoss, [evalAccv1, evalAccv2, evalAccv3, evalAccv4]
         # Return the training result.
-        return model.train(), np.mean(trainLoss), np.mean(trainAcc), None, None 
+        return model.train(), lrList, np.mean(trainLoss), np.mean(trainAcc), None, None 
     
     # Set the function to evaluate the model.
     def Evaluator(model, loss, devSet, device):
@@ -211,11 +223,20 @@ if __name__ == "__main__":
     #optimizer = optim.RMSprop(model.parameters(), lr = Cfg.learningRate, weight_decay = Cfg.weightDecay, momentum = Cfg.momentum)
     #optimizer = optim.SGD(model.parameters(), lr = Cfg.learningRate, momentum = Cfg.momentum, weight_decay = Cfg.weightDecay)
     # Create the learning rate decay.
-    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max = 10, eta_min = 1e-10)
+    scheduler = NoamScheduler(optimizer, Cfg.warmUp, Cfg.dModel)
+    # Create the learning rates storer.
+    lrs = []
     # Train the model.
     for epoch in range(Cfg.epoches):
         # Train the model.
-        model, trainLoss, trainAcc, evalLoss, evalAcc = Trainer.Trainer(model = model, loss = loss, optim = optimizer, trainSet = trainSet, devSet = devSet, epoch = epoch, epoches = Cfg.epoches, device = device, eval = True)
+        model, lrList, trainLoss, trainAcc, evalLoss, evalAcc = Trainer.Trainer(model = model, loss = loss, optim = optimizer, trainSet = trainSet, devSet = devSet, epoch = epoch, epoches = Cfg.epoches, device = device, scheduler = scheduler, eval = True)
+        # Get the current learning rates.
+        lrs.extend(lrList)
+        print(len(lrs))
+        input("PAUSE")
+        # Store the learning rates.
+        with open(f'{Cfg.logDir}//NoamScheduler//{currentTime}//learningRates.txt', 'w') as file:
+            file.write(str(lrs))
         # Log the training result.
         if Cfg.GPUID > -1:
             # Compute the memory usage.
@@ -237,7 +258,5 @@ if __name__ == "__main__":
         # Save the model.
         torch.save(model.state_dict(), Cfg.modelDir + f'/{currentTime}.pt')
         logger.info('Model Saved')
-        # Apply the learning rate decay.
-        scheduler.step()
     # Close the visdom server.
     Logger.VisSaver(vis, visName = f'{currentTime}')
