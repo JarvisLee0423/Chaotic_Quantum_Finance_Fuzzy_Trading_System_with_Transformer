@@ -15,8 +15,9 @@ dModel:100
 dim:300
 hidden:300
 Days:20
-learningRate:0.0005
+learningRate:0.01
 momentum:0.9
+warmUp:4000
 beta1:0.9
 beta2:0.98
 epsilon:1e-09
