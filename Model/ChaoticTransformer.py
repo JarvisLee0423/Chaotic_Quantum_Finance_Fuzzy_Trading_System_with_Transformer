@@ -289,6 +289,7 @@ class ChaoticTransformer(nn.Module):
         else:
             # Print the hint.
             print(f'Do not apply the decoder.')
+            self.query = None
             self.decoder = None
         # Create the predictor.
         self.predictor = nn.Linear(seqLen * dModel, output)
