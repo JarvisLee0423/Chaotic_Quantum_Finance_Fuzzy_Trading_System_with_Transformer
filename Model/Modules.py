@@ -212,14 +212,16 @@ class ChaoticEmbedding(nn.Module):
         # Plot the chaotic extractor.
         if plot and filename is not None:
             #print(f'The chaotic features extractor (shape: {extractor.shape}):\n {extractor}')
-            plt.matshow(extractor.cpu().detach().numpy())
-            plt.colorbar()
-            plt.title('Chaotic Features Extractor', pad = 20)
-            plt.xlabel('Y Dimension of the extractor')
-            plt.ylabel('X Dimension of the extractor')
-            plt.savefig(f"./{filename}.jpg")
-            plt.close()
+            #plt.matshow(extractor.cpu().detach().numpy())
+            #plt.colorbar()
+            #plt.title('Chaotic Features Extractor', pad = 20)
+            #plt.xlabel('Y Dimension of the extractor')
+            #plt.ylabel('X Dimension of the extractor')
+            #plt.savefig(f"./{filename}.jpg")
+            #plt.close()
             #plt.show()
+            with open(f"./{filename}.txt", "w") as file:
+                file.write(str(extractor.cpu().detach().numpy()))
         # Get the chaotic embedding.
         CE = torch.matmul(extractor, x)
         # Return the chaotic embedding. (CE.shape = [1, seqLen, dim])
