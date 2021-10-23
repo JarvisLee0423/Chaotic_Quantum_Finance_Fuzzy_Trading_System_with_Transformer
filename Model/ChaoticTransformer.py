@@ -328,16 +328,18 @@ class ChaoticTransformer(nn.Module):
         # Draw the query out.
         if self.query is not None and filename != 'Sample':
             #print(f'The query (shape: {query.shape}):\n {query}')
-            plt.matshow(self.query.cpu().detach().numpy())
-            plt.colorbar()
-            plt.title('Output Query', pad = 20)
-            plt.xlabel('Features Dimension')
-            plt.ylabel('Sequence Length')
+            #plt.matshow(self.query.cpu().detach().numpy())
+            #plt.colorbar()
+            #plt.title('Output Query', pad = 20)
+            #plt.xlabel('Features Dimension')
+            #plt.ylabel('Sequence Length')
             filenameList = filename.split('//')
             filenameList[2] = "OutputQuery"
-            plt.savefig(f"{'//'.join(filenameList)}.jpg")
-            plt.close()
+            #plt.savefig(f"{'//'.join(filenameList)}.jpg")
+            #plt.close()
             #plt.show()
+            with open(f"{'//'.join(filenameList)}.txt", "w") as file:
+                file.write(str(self.query.cpu().detach().numpy()))
         # Compute the result.
         if self.decoder is not None:
             # Compute the decoder.
