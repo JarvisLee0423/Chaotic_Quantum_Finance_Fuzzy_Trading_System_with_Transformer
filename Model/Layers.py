@@ -67,14 +67,11 @@ class DecodeLayer(nn.Module):
         self.FFN = FeedForward(dModel, hidden, dropout, Lee, Mish)
     
     # Create the forward.
-    def forward(self, query, key, value, posEmbed, chaoticEmbed = None):
+    def forward(self, query, key, value, posEmbed):
         # Compute the first multi-head self-attention.
         output = self.MHAtten1(query + posEmbed, query + posEmbed, query + posEmbed)
         # Compute the second multi-head self-attention.
-        if chaoticEmbed is not None:
-            output = self.MHAtten2(output, key + posEmbed, value + posEmbed + chaoticEmbed)
-        else:
-            output = self.MHAtten2(output, key + posEmbed, value + posEmbed)
+        output = self.MHAtten2(output, key + posEmbed, value + posEmbed)
         # Compute the feed forward layer.
         output = self.FFN(output)
         # Return the result.
