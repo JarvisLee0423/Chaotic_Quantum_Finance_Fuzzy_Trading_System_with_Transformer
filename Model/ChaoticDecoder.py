@@ -37,14 +37,14 @@ class ChaoticDecoder(nn.Module):
         self.layerNorm = nn.LayerNorm(dModel, eps = 1e-6)
     
     # Create the forward.
-    def forward(self, query, key, value, posEmbed, chaoticEmbed = None):
+    def forward(self, query, key, value, posEmbed):
         # Compute the layer norm.
         query = self.layerNorm(query)
         key = self.layerNorm(key)
         value = self.layerNorm(value)
         # Compute the decoder.
         for layer in self.decoder:
-            query = layer(query, key, value, posEmbed, chaoticEmbed)
+            query = layer(query, key, value, posEmbed)
         # Return the result.
         return query
 
