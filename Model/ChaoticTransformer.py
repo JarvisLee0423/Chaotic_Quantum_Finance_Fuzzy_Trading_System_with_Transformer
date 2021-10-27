@@ -340,11 +340,11 @@ class ChaoticTransformer(nn.Module):
             #plt.close()
             #plt.show()
             with open(f"{'//'.join(filenameList)}.txt", "w") as file:
-                file.write(str(self.query.cpu().detach().numpy()))
+                file.write(str(self.query.cpu().detach().tolist()))
         # Compute the result.
         if self.decoder is not None:
             # Compute the decoder.
-            output = self.decoder(self.query.unsqueeze(0).repeat(bs, 1, 1), encoding, encoding, PE, CE)
+            output = self.decoder(self.query.unsqueeze(0).repeat(bs, 1, 1), encoding, encoding, PE)
             # Compute the output.
             return self.predictor(output.reshape(bs, -1)), mask.squeeze().cpu().detach().numpy()
         else:
