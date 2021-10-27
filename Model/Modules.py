@@ -221,11 +221,11 @@ class ChaoticEmbedding(nn.Module):
             #plt.close()
             #plt.show()
             with open(f"./{filename}.txt", "w") as file:
-                file.write(str(extractor.cpu().detach().numpy()))
+                file.write(str(extractor.cpu().detach().tolist()))
         # Get the chaotic embedding.
         CE = torch.matmul(extractor, x)
         # Return the chaotic embedding. (CE.shape = [1, seqLen, dim])
-        return CE.to(x.device).detach()
+        return CE.to(x.device)
 
 # Test the codes.
 if __name__ == "__main__":
