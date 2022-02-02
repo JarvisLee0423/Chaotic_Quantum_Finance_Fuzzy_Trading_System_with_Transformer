@@ -19,10 +19,10 @@ class Logger():
     '''
         This class is used to encapsulate all the functions which are used to log the training details.\n
         This class contains five parts:\n
-            - VisConfigurator: is used to configurate the visdom server.
-            - LogConfigurator: is used to configurate the information logger.
-            - VisDrawer: is used to draw the graph in the visdom server.
-            - VisSaver: is used to save the visdom graph.
+            - VisConfigurator: Used to configurate the visdom server.
+            - LogConfigurator: Used to configurate the information logger.
+            - VisDrawer: Used to draw the graph in the visdom server.
+            - VisSaver: Used to save the visdom graph.
     '''
     # Set the function to configurate the visdom.
     def VisConfigurator(currentTime = None, visName = 'GraphLogging'):
